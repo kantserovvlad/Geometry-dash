@@ -52,10 +52,8 @@ class Play(pygame.sprite.Sprite):
     def update(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             self.image = load_image("play-press.png")
-            self.rect.center = (screen.get_width() // 2, screen.get_height() // 2)
-        else:
-            self.image = load_image("play.png")
-            self.rect.center = (screen.get_width() // 2, screen.get_height() // 2)
+        if event.type == pygame.MOUSEBUTTONUP:
+            self.image = load_image('play.png')
 
 
 if __name__ == '__main__':
@@ -81,10 +79,11 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
+                all_sprites.update(event)
+            if event.type == pygame.MOUSEBUTTONUP:
+                all_sprites.update(event)
         screen.blit(load_image('fon1.jpg'), (0, 0))
         all_sprites.draw(screen)
-        all_sprites.update(event)
         clock.tick(fps)
         pygame.display.flip()
     pygame.mixer.music.stop()
