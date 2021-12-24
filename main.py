@@ -45,15 +45,18 @@ class Play(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
         self.image = load_image("play.png")
+        self.image_press = load_image('play-press.png')
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.center = (screen.get_width() // 2, screen.get_height() // 2)
 
     def update(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
-            self.image = load_image("play-press.png")
-        if event.type == pygame.MOUSEBUTTONUP:
-            self.image = load_image('play.png')
+        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
+                self.rect.collidepoint(event.pos):
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
 
 
 if __name__ == '__main__':
