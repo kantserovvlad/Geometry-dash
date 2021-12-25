@@ -59,6 +59,41 @@ class Play(pygame.sprite.Sprite):
             self.rect.center = x, y
 
 
+class CubeStyle(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.image = load_image("change_cube.png")
+        self.image_press = load_image('change_cube-press.png')
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.center = (screen.get_width() // 2 - 120, screen.get_height() // 2)
+
+    def update(self, event):
+        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
+                self.rect.collidepoint(event.pos):
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
+
+class EditorLevel(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.image = load_image("editor_level.png")
+        self.image_press = load_image('editor_level-press.png')
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.center = (screen.get_width() // 2 + 120, screen.get_height() // 2)
+
+    def update(self, event):
+        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
+                self.rect.collidepoint(event.pos):
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
+
+
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 800, 500
@@ -73,6 +108,8 @@ if __name__ == '__main__':
 
     board = Board(40, 25)
     play = Play()
+    cube_style = CubeStyle()
+    editor_level = EditorLevel()
 
     pygame.mixer.music.load('music\start.mp3')
     pygame.mixer.music.play()
