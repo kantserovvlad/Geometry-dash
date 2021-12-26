@@ -213,7 +213,9 @@ class Tips(pygame.sprite.Sprite):
 class Exit(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(troll_sprites, settings_sprites)
+        self.flag_press = False
         self.image = load_image("exit.png", "white")
+        self.image_press = load_image("exit_pressed.png", "white")
         self.image = pygame.transform.scale(self.image, (100, 60))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = width * 0.025, height * 0.07
@@ -225,6 +227,7 @@ if __name__ == '__main__':
     size = width, height = 850, 450
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Geometry dash')
+    pygame.display.set_icon(pygame.image.load("images\icon.png"))
 
     fps = 100
     v = 40
