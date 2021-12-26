@@ -72,13 +72,9 @@ def custom_cube(screen, size):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
-
             if event.type == pygame.MOUSEBUTTONDOWN and exit_button.rect.collidepoint(event.pos):
-                return
-
+                running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-
                 x, y = event.pos[0], event.pos[1]
                 if 625 <= x <= 825 and 40 <= y <= 140:
                     c = customize_screen.get_at(event.pos)
@@ -134,12 +130,10 @@ def custom_cube(screen, size):
             pygame.draw.rect(customize_screen, (10, 10, 10), (0, height * 0.8, width, height))
             pygame.draw.line(customize_screen, pygame.Color("white"), (width * 0.25, height * 0.82),
                              (width * 0.75, height * 0.82), width=2)
-
         main_cube.draw(customize_screen)
         main_cube = pygame.sprite.Group()
         all_sprites.draw(customize_screen)
         pygame.display.flip()
-    pygame.quit()
 
 
 def draw_cube(style_cube, color1, color2):

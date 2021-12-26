@@ -81,6 +81,7 @@ class CubeStyle(pygame.sprite.Sprite):
 
         if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
             custom_cube(screen, size)
+            self.flag_press = False
 
 
 class EditorLevel(pygame.sprite.Sprite):
