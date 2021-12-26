@@ -1,9 +1,27 @@
+import os
+import sys
 import pygame
 from PIL import Image, ImageDraw
 
 
+def load_image(name, colorkey=None):
+    fullname = os.path.join('images/cube/', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+
 def custom_cube(screen):
-    width, height = 850, 450
+    width, height = 800, 500
     style_cube, color1, color2 = None, None, None
     main_cube = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group()
@@ -176,6 +194,6 @@ def draw_cube(style_cube, color1, color2):
     with open('color_cube.txt', encoding='utf8', mode="w") as f:
         f.write(text)
 
-    pic.save("images\cube.png")
+    pic.save("images\cube\cube.png")
     return pic
 

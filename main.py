@@ -1,10 +1,11 @@
 import os
 import sys
 import pygame
+from custom_cube import custom_cube
 
 
-def load_image(name, colorkey=None):
-    fullname = os.path.join('Images', name)
+def load_image_buttons(name, colorkey=None):
+    fullname = os.path.join('images/buttons', name)
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
@@ -44,8 +45,8 @@ class Board:
 class Play(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
-        self.image = load_image("play.png")
-        self.image_press = load_image('play-press.png')
+        self.image = load_image_buttons("play.png")
+        self.image_press = load_image_buttons('play-press.png')
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.center = (screen.get_width() // 2, screen.get_height() // 2)
@@ -62,8 +63,9 @@ class Play(pygame.sprite.Sprite):
 class CubeStyle(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
-        self.image = load_image("change_cube.png")
-        self.image_press = load_image('change_cube-press.png')
+        self.flag_press = False
+        self.image = load_image_buttons("change_cube.png")
+        self.image_press = load_image_buttons('change_cube-press.png')
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.center = (screen.get_width() // 2 - 120, screen.get_height() // 2)
@@ -71,16 +73,21 @@ class CubeStyle(pygame.sprite.Sprite):
     def update(self, event):
         if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
                 self.rect.collidepoint(event.pos):
+            self.flag_press = True
             x, y, = self.rect.center
             self.image, self.image_press = self.image_press, self.image
             self.rect = self.image.get_rect()
             self.rect.center = x, y
 
+        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
+            custom_cube(screen)
+
+
 class EditorLevel(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
-        self.image = load_image("editor_level.png")
-        self.image_press = load_image('editor_level-press.png')
+        self.image = load_image_buttons("editor_level.png")
+        self.image_press = load_image_buttons('editor_level-press.png')
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.center = (screen.get_width() // 2 + 120, screen.get_height() // 2)
@@ -122,7 +129,7 @@ if __name__ == '__main__':
                 all_sprites.update(event)
             if event.type == pygame.MOUSEBUTTONUP:
                 all_sprites.update(event)
-        screen.blit(load_image('fon1.jpg'), (0, 0))
+        screen.blit(load_image_buttons('../backgrounds/fon1.jpg'), (0, 0))
         all_sprites.draw(screen)
         clock.tick(fps)
         pygame.display.flip()
