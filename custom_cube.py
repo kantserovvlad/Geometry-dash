@@ -60,9 +60,11 @@ def custom_cube(screen, size):
     pygame.draw.line(customize_screen, pygame.Color("white"), (width * 0.25, height * 0.82),
                      (width * 0.75, height * 0.82),
                      width=2)
-    pygame.draw.polygon(customize_screen, (245, 50, 255), ((width * 0.02, height * 0.1),
-                                                           (width * 0.07, height * 0.05),
-                                                           (width * 0.07, height * 0.15)))
+    exit_button = pygame.sprite.Sprite(all_sprites)
+    exit_button.image = load_image("exit.png", "white")
+    exit_button.image = pygame.transform.scale(exit_button.image, (100, 60))
+    exit_button.rect = exit_button.image.get_rect()
+    exit_button.rect.x, exit_button.rect.y = width * 0.025, height * 0.06
 
     pygame.display.flip()
     running = True
@@ -70,6 +72,9 @@ def custom_cube(screen, size):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN and exit_button.rect.collidepoint(event.pos):
+                return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
@@ -128,9 +133,6 @@ def custom_cube(screen, size):
             pygame.draw.rect(customize_screen, (10, 10, 10), (0, height * 0.8, width, height))
             pygame.draw.line(customize_screen, pygame.Color("white"), (width * 0.25, height * 0.82),
                              (width * 0.75, height * 0.82), width=2)
-            pygame.draw.polygon(customize_screen, (245, 50, 255), ((width * 0.02, height * 0.1),
-                                                                   (width * 0.07, height * 0.05),
-                                                                   (width * 0.07, height * 0.15)))
 
         main_cube.draw(customize_screen)
         main_cube = pygame.sprite.Group()
