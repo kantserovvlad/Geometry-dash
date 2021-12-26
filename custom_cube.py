@@ -20,8 +20,8 @@ def load_image(name, colorkey=None):
     return image
 
 
-def custom_cube(screen):
-    width, height = 800, 500
+def custom_cube(screen, size):
+    width, height = size
     style_cube, color1, color2 = None, None, None
     main_cube = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group()

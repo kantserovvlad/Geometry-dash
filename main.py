@@ -80,7 +80,7 @@ class CubeStyle(pygame.sprite.Sprite):
             self.rect.center = x, y
 
         if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
-            custom_cube(screen)
+            custom_cube(screen, size)
 
 
 class EditorLevel(pygame.sprite.Sprite):
@@ -103,7 +103,7 @@ class EditorLevel(pygame.sprite.Sprite):
 
 if __name__ == '__main__':
     pygame.init()
-    size = width, height = 800, 500
+    size = width, height = 850, 450
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Geometry dash')
 
