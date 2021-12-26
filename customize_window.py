@@ -1,11 +1,10 @@
 import pygame
 
 from draw_cube import draw_cube
-from load_image import load_image
 
 
-def custom_window():
-    size = width, height = 850, 450
+def custom_window(screen):
+    width, height = 850, 450
     style_cube, color1, color2 = None, None, None
     main_cube = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group()
@@ -13,9 +12,7 @@ def custom_window():
     styles = {"style1.png": (width * 0.15, height * 0.05), "style2.png": (width * 0.15, height * 0.225),
               "style3.png": (width * 0.15, height * 0.4), "style4.png": (width * 0.15, height * 0.575)}
 
-    pygame.init()
-    customize_screen = pygame.display.set_mode(size)
-    pygame.display.set_caption("Customize cube")
+    customize_screen = screen
 
     for name, coords in styles.items():
         sprite = pygame.sprite.Sprite(all_sprites)
@@ -123,6 +120,3 @@ def custom_window():
         all_sprites.draw(customize_screen)
         pygame.display.flip()
     pygame.quit()
-
-
-custom_window()

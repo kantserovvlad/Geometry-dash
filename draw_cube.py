@@ -56,5 +56,5 @@ def draw_cube(style_cube, color1, color2):
     with open('color_cube.txt', encoding='utf8', mode="w") as f:
         f.write(text)
 
-    pic.save("data\cube.png")
+    pic.save("images\cube.png")
     return pic
