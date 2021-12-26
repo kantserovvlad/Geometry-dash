@@ -33,11 +33,11 @@ def settings_window(screen):
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                all_sprites.update(event)
+                settings_sprites.update(event)
         screen.blit(load_image_buttons('../backgrounds/fon1.jpg'), (0, 0))
         clock.tick(fps)
         draw_settings(screen)
-        all_sprites.draw(screen)
+        settings_sprites.draw(screen)
         pygame.display.flip()
 
 
@@ -69,7 +69,7 @@ def draw_text(screen):
 
 def draw_settings(screen):
     font = pygame.font.Font(None, 80)
-    text = font.render("Settings", True, (0, 255, 0))
+    text = font.render("Настройки", True, (0, 255, 0))
     text_x = width // 2 - text.get_width() // 2
     text_y = height * 0.1
     text_w = text.get_width()
@@ -79,7 +79,7 @@ def draw_settings(screen):
 
 class Rate(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(all_sprites)
+        super().__init__(settings_sprites)
         self.image = load_image("rate.png", (127, 127, 127))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = width * 0.15, height * 0.3
@@ -91,9 +91,22 @@ class Rate(pygame.sprite.Sprite):
             troll_window(screen, size)
 
 
+class Tips(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(settings_sprites)
+        self.image = load_image("tips.png", (127, 127, 127))
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = width * 0.6, height * 0.3
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
+            pass
+
+
 class Exit(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(troll_sprites)
+        super().__init__(troll_sprites, settings_sprites)
         self.image = load_image("exit.png", "white")
         self.image = pygame.transform.scale(self.image, (100, 60))
         self.rect = self.image.get_rect()
@@ -106,16 +119,11 @@ pygame.display.set_caption("Geometry dash")
 size = width, height = 850, 450
 screen = pygame.display.set_mode(size)
 
-all_sprites = pygame.sprite.Group()
+settings_sprites = pygame.sprite.Group()
 troll_sprites = pygame.sprite.Group()
+exit = Exit()
 rate = Rate()
-buttons = {"tips.png": (width * 0.6, height * 0.3)}
-
-for name, coords in buttons.items():
-    sprite = pygame.sprite.Sprite(all_sprites)
-    sprite.image = load_image(name, (127, 127, 127))
-    sprite.rect = sprite.image.get_rect()
-    sprite.rect.x, sprite.rect.y = buttons[name]
+tips = Tips()
 
 fps = 100
 clock = pygame.time.Clock()
