@@ -73,6 +73,7 @@ def custom_cube(screen, size):
             if event.type == pygame.QUIT:
                 running = False
 
+
             if event.type == pygame.MOUSEBUTTONDOWN and exit_button.rect.collidepoint(event.pos):
                 return
 
