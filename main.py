@@ -221,14 +221,7 @@ def custom_cube(screen, size):
     customize_screen = screen
 
     for name, coords in styles.items():
-        sprite = pygame.sprite.Sprite(all_sprites)
-        if name != "style4.png":
-            sprite.image = load_image_cube(name, None)
-        else:
-            sprite.image = load_image_cube(name, (255, 0, 0))
-        sprite.image = pygame.transform.scale(sprite.image, (70, 70))
-        sprite.rect = sprite.image.get_rect()
-        sprite.rect.x, sprite.rect.y = styles[name]
+        style = Styles(name, coords)
 
     image = load_image_cube("colors.png", -1)
     for i in range(2):
@@ -261,6 +254,7 @@ def custom_cube(screen, size):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 cube_sprites.update(event)
                 x, y = event.pos[0], event.pos[1]
+
                 if 625 <= x <= 825 and 40 <= y <= 140:
                     c = customize_screen.get_at(event.pos)
                     color1 = c[0], c[1], c[2]
@@ -325,6 +319,33 @@ def custom_cube(screen, size):
         cube_sprites.draw(customize_screen)
         all_sprites.draw(customize_screen)
         pygame.display.flip()
+
+
+class Styles(pygame.sprite.Sprite):
+    def __init__(self, name, coords):
+        super().__init__(cube_sprites)
+        self.flag_press = False
+        if name != "style4.png":
+            self.image = load_image_cube(name, None)
+        else:
+            self.image = load_image_cube(name, (255, 0, 0))
+        self.image = pygame.transform.scale(self.image, (70, 70))
+        self.image_press = pygame.transform.scale(self.image, (80, 80))
+        self.rect = self.image.get_rect()
+        self.rect.center = coords[0] + self.rect.width // 2, coords[1] + self.rect.height // 2
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, event):
+        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) \
+                and self.rect.collidepoint(event.pos):
+            self.flag_press = True
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
+
+        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
+            self.flag_press = False
 
 
 class Board:
