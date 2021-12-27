@@ -24,6 +24,16 @@ def draw_settings(screen):
     screen.blit(text, (text_x, text_y))
 
 
+def draw_tutorial(screen):
+    font = pygame.font.Font(None, 80)
+    text = font.render("Как играть?", True, (0, 255, 0))
+    text_x = width // 2 - text.get_width() // 2
+    text_y = height * 0.1
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('images/', name)
     if not os.path.isfile(fullname):
@@ -156,6 +166,25 @@ def troll_window(screen, size):
         pygame.display.flip()
 
 
+def tutorial_window(screen):
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                settings_sprites.update(event)
+            if event.type == pygame.MOUSEBUTTONUP:
+                settings_sprites.update(event)
+                if exit.rect.collidepoint(event.pos):
+                    running = False
+        screen.blit(load_image_buttons('../backgrounds/fon1.jpg'), (0, 0))
+        clock.tick(fps)
+        draw_tutorial(screen)
+        tutorial_sprites.draw(screen)
+        pygame.display.flip()
+
+
 def settings_window(screen):
     running = True
     while running:
@@ -170,6 +199,8 @@ def settings_window(screen):
                     running = False
                 if rate.rect.collidepoint(event.pos):
                     troll_window(screen, size)
+                if tips.rect.collidepoint(event.pos):
+                    tutorial_window(screen)
 
         screen.blit(load_image_buttons('../backgrounds/fon1.jpg'), (0, 0))
         clock.tick(fps)
@@ -407,22 +438,19 @@ class Rate(pygame.sprite.Sprite):
             self.flag_press = False
 
 
-class Tips(pygame.sprite.Sprite):
+class Tips(Rate):
     def __init__(self):
-        super().__init__(settings_sprites)
+        super().__init__()
         self.image = load_image("tips.png", (127, 127, 127))
+        self.image_press = pygame.transform.scale(self.image, (240, 100))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = width * 0.6, height * 0.3
         self.mask = pygame.mask.from_surface(self.image)
 
-    def update(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
-            pass
-
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(troll_sprites, settings_sprites, cube_sprites)
+        super().__init__(troll_sprites, settings_sprites, cube_sprites, tutorial_sprites)
         self.flag_press = False
         self.image = pygame.transform.scale(load_image("cube\exit.png", "white"), (100, 60))
         self.image_press = pygame.transform.scale(load_image("cube\exit_pressed.png", "white"), (120, 80))
@@ -458,6 +486,8 @@ if __name__ == '__main__':
     cube_sprites = pygame.sprite.Group()
     settings_sprites = pygame.sprite.Group()
     troll_sprites = pygame.sprite.Group()
+    tutorial_sprites = pygame.sprite.Group()
+
     exit = Exit()
     rate = Rate()
     tips = Tips()
