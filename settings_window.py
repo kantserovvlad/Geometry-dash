@@ -107,7 +107,7 @@ class Tips(pygame.sprite.Sprite):
 class Exit(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(troll_sprites, settings_sprites)
-        self.image = load_image("exit.png", "white")
+        self.image = load_image("cube/exit.png", "white")
         self.image = pygame.transform.scale(self.image, (100, 60))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = width * 0.025, height * 0.07

@@ -355,7 +355,7 @@ class Board:
         self.board = [[0] * width for _ in range(height)]
         self.left = 0
         self.top = 0
-        self.cell_size = 20
+        self.cell_size = 30
 
     def set_view(self, left, top, cell_size):
         self.left = left
