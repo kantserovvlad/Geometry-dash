@@ -15,23 +15,27 @@ def draw_text(screen):
 
 
 def draw_settings(screen):
-    font = pygame.font.Font(None, 80)
-    text = font.render("Настройки", True, (0, 255, 0))
-    text_x = width // 2 - text.get_width() // 2
-    text_y = height * 0.1
-    text_w = text.get_width()
-    text_h = text.get_height()
-    screen.blit(text, (text_x, text_y))
+    text = {"Настройки": [height * 0.1, 80], "Громкость": [height * 0.6, 50]}
+    for k, v in text.items():
+        font = pygame.font.Font(None, v[1])
+        text = font.render(k, True, (0, 255, 0))
+        text_x = width // 2 - text.get_width() // 2
+        text_y = v[0]
+        text_w = text.get_width()
+        text_h = text.get_height()
+        screen.blit(text, (text_x, text_y))
 
 
 def draw_tutorial(screen):
-    font = pygame.font.Font(None, 80)
-    text = font.render("Как играть?", True, (0, 255, 0))
-    text_x = width // 2 - text.get_width() // 2
-    text_y = height * 0.1
-    text_w = text.get_width()
-    text_h = text.get_height()
-    screen.blit(text, (text_x, text_y))
+    text = {"Управление": [height * 0.1, 80], "Space (пробел) - прыжок": [height * 0.3, 50]}
+    for k, v in text.items():
+        font = pygame.font.Font(None, v[1])
+        text = font.render(k, True, (0, 255, 0))
+        text_x = width // 2 - text.get_width() // 2
+        text_y = v[0]
+        text_w = text.get_width()
+        text_h = text.get_height()
+        screen.blit(text, (text_x, text_y))
 
 
 def load_image(name, colorkey=None):
@@ -192,6 +196,10 @@ def settings_window(screen):
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
+                volume = slider.handle_event(screen, event.pos[0], event.pos[1])
+                if volume:
+                    pygame.mixer.music.set_volume(volume / 100)
+
                 settings_sprites.update(event)
             if event.type == pygame.MOUSEBUTTONUP:
                 settings_sprites.update(event)
@@ -206,6 +214,7 @@ def settings_window(screen):
         clock.tick(fps)
         draw_settings(screen)
         settings_sprites.draw(screen)
+        slider.draw(screen)
         pygame.display.flip()
 
 
@@ -321,6 +330,131 @@ def custom_cube(screen, size):
         pygame.display.flip()
 
 
+def create_level_window(screen, size):
+    is_pressed = None
+    mode = None
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if exit.rect.collidepoint(event.pos):
+                    exit.update(event)
+                else:
+                    board.get_click(event.pos)
+                if spike.rect.collidepoint(event.pos) and is_pressed in [None, 1]:
+                    mode = "spike"
+                    if is_pressed == 1:
+                        is_pressed = None
+                    else:
+                        is_pressed = 1
+                    create_sprites.update(event)
+                if block.rect.collidepoint(event.pos) and is_pressed in [None, 2]:
+                    mode = "block"
+                    if is_pressed == 2:
+                        is_pressed = None
+                    else:
+                        is_pressed = 2
+                    create_sprites.update(event)
+                if delete.rect.collidepoint(event.pos):
+                    delete.update(event)
+                if save.rect.collidepoint(event.pos):
+                    save.update(event)
+            if event.type == pygame.MOUSEBUTTONUP:
+                if exit.rect.collidepoint(event.pos):
+                    exit.update(event)
+                    running = False
+                if delete.rect.collidepoint(event.pos):
+                    delete.update(event)
+                    board.clear(screen)
+                if save.rect.collidepoint(event.pos):
+                    save.update(event)
+
+        background = load_image_buttons('../backgrounds/fon1.jpg')
+        background = pygame.transform.scale(background, (width, height))
+        screen.blit(background, (0, 0))
+
+        pygame.draw.rect(screen, pygame.Color(27, 35, 60), [0, 331, width, height])
+        pygame.draw.line(screen, pygame.Color(255, 255, 255), (0, 331), (width, 331), width=2)
+        board.render(screen)
+        create_sprites.draw(screen)
+        pygame.display.flip()
+
+
+class Slider:
+    def __init__(self, x, y, w, h):
+        self.full_x = self.circle_x = x
+        self.volume = 100
+        self.sliderRect = pygame.Rect(x, y, w, h)
+        self.flag = False
+
+    def draw(self, screen):
+        if not self.flag:
+            pygame.draw.rect(screen, (0, 255, 0), self.sliderRect)
+            pygame.draw.circle(screen, (255, 240, 255),
+                               (self.circle_x + self.sliderRect.w, (self.sliderRect.h / 2 + self.sliderRect.y)),
+                               self.sliderRect.h * 1.5)
+            pygame.draw.circle(screen, (0, 0, 0),
+                               (self.circle_x + self.sliderRect.w, (self.sliderRect.h / 2 + self.sliderRect.y)),
+                               self.sliderRect.h * 1.5, width=1)
+        else:
+            pygame.draw.rect(screen, (0, 255, 0), self.sliderRect)
+            pygame.draw.rect(screen, (127, 127, 127), (self.circle_x, self.sliderRect[1],
+                                                       self.sliderRect[0] + self.sliderRect[2] - self.circle_x,
+                                                       self.sliderRect[3]))
+            pygame.draw.circle(screen, (255, 240, 255), (self.circle_x, (self.sliderRect.h / 2 + self.sliderRect.y)),
+                               self.sliderRect.h * 1.5)
+            pygame.draw.circle(screen, (0, 0, 0),
+                               (self.circle_x, (self.sliderRect.h / 2 + self.sliderRect.y)),
+                               self.sliderRect.h * 1.5, width=1)
+
+    def get_volume(self):
+        return self.volume
+
+    def set_volume(self, num):
+        self.volume = num
+
+    def update_volume(self, x):
+        if x < self.sliderRect.x:
+            self.volume = 0
+        elif x > self.sliderRect.x + self.sliderRect.w:
+            self.volume = 100
+        else:
+            self.volume = int((x - self.sliderRect.x) / float(self.sliderRect.w) * 100)
+
+    def on_slider(self, x, y):
+        if self.on_slider_hold(x, y) or self.sliderRect.x <= x <= self.sliderRect.x + self.sliderRect.w and \
+                self.sliderRect.y <= y <= self.sliderRect.y + self.sliderRect.h:
+            return True
+        else:
+            return False
+
+    def on_slider_hold(self, x, y):
+        if ((x - self.circle_x) * (x - self.circle_x) + (y - (self.sliderRect.y + self.sliderRect.h / 2)) * (
+                y - (self.sliderRect.y + self.sliderRect.h / 2))) \
+                <= (self.sliderRect.h * 1.5) * (self.sliderRect.h * 1.5):
+            return True
+        else:
+            return False
+
+    def handle_event(self, screen, x, y):
+        if self.sliderRect[0] <= x <= self.sliderRect[0] + self.sliderRect[2] and \
+                self.sliderRect[1] <= y <= self.sliderRect[1] + self.sliderRect[3]:
+            if x < self.sliderRect.x:
+                self.circle_x = self.sliderRect.x
+            elif x > self.sliderRect.x + self.sliderRect.w:
+                self.circle_x = self.sliderRect.x + self.sliderRect.w
+            else:
+                self.circle_x = x
+            print(self.circle_x)
+            self.flag = True
+            self.draw(screen)
+            self.update_volume(x)
+            return self.volume
+
+
 class Styles(pygame.sprite.Sprite):
     def __init__(self, name, coords):
         super().__init__(cube_sprites)
@@ -349,18 +483,30 @@ class Styles(pygame.sprite.Sprite):
 
 
 class Board:
-    def __init__(self, width, height):
+    def __init__(self, width, height, left, top, cell_size):
         self.width = width
         self.height = height
         self.board = [[0] * width for _ in range(height)]
-        self.left = 0
-        self.top = 0
-        self.cell_size = 30
-
-    def set_view(self, left, top, cell_size):
         self.left = left
         self.top = top
         self.cell_size = cell_size
+
+    def render(self, screen):
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.board[y][x]:
+                    pygame.draw.rect(screen, pygame.Color(255, 255, 255),
+                                     (x * self.cell_size + self.left,
+                                      y * self.cell_size + self.top,
+                                      self.cell_size, self.cell_size), 1)
+                else:
+                    pygame.draw.rect(screen, pygame.Color(0, 0, 0),
+                                     (x * self.cell_size + self.left,
+                                      y * self.cell_size + self.top,
+                                      self.cell_size, self.cell_size), 1)
+
+    def on_click(self, cell):
+        self.board[cell[1]][cell[0]] = (self.board[cell[1]][cell[0]] + 1) % 2
 
     def get_cell(self, mouse_pos):
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
@@ -368,6 +514,15 @@ class Board:
         if cell_x < 0 or cell_x >= self.width or cell_y < 0 or cell_y >= self.height:
             return None
         return cell_x, cell_y
+
+    def get_click(self, mouse_pos):
+        cell = self.get_cell(mouse_pos)
+        if cell:
+            self.on_click(cell)
+
+    def clear(self, screen):
+        self.board = [[0] * width for _ in range(height)]
+        self.render(screen)
 
 
 class Play(pygame.sprite.Sprite):
@@ -412,6 +567,30 @@ class CubeStyle(pygame.sprite.Sprite):
             self.flag_press = False
 
 
+class Settings(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.flag_press = False
+        self.image = load_image_buttons("settings.png")
+        self.image_press = pygame.transform.scale(self.image, (140, 65))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.center = (screen.get_width() // 2, screen.get_height() * 0.7)
+
+    def update(self, event):
+        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
+                self.rect.collidepoint(event.pos):
+            self.flag_press = True
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
+
+        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
+            settings_window(screen)
+            self.flag_press = False
+
+
 class EditorLevel(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
@@ -432,7 +611,7 @@ class EditorLevel(pygame.sprite.Sprite):
             self.rect.center = x, y
 
         if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
-            settings_window(screen)
+            create_level_window(screen, size)
             self.flag_press = False
 
 
@@ -440,7 +619,7 @@ class Rate(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(settings_sprites)
         self.flag_press = False
-        self.image = load_image("rate.png", (127, 127, 127))
+        self.image = load_image_buttons("rate.png", (127, 127, 127))
         self.image_press = pygame.transform.scale(self.image, (240, 100))
         self.rect = self.image.get_rect()
         self.rect.center = width * 0.15 + self.rect.width // 2, height * 0.3 + self.rect.height // 2
@@ -462,7 +641,7 @@ class Rate(pygame.sprite.Sprite):
 class Tips(Rate):
     def __init__(self):
         super().__init__()
-        self.image = load_image("tips.png", (127, 127, 127))
+        self.image = load_image_buttons("tips.png", (127, 127, 127))
         self.image_press = pygame.transform.scale(self.image, (240, 100))
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = width * 0.6, height * 0.3
@@ -471,10 +650,10 @@ class Tips(Rate):
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(troll_sprites, settings_sprites, cube_sprites, tutorial_sprites)
+        super().__init__(troll_sprites, settings_sprites, cube_sprites, tutorial_sprites, create_sprites)
         self.flag_press = False
-        self.image = pygame.transform.scale(load_image("cube\exit.png", "white"), (100, 60))
-        self.image_press = pygame.transform.scale(load_image("cube\exit_pressed.png", "white"), (120, 80))
+        self.image = load_image("cube\exit.png", "white")
+        self.image_press = load_image("cube\exit_pressed.png", "white")
         self.rect = self.image.get_rect()
         self.rect.center = width * 0.025 + self.rect.width // 2, height * 0.06 + self.rect.height // 2
         self.mask = pygame.mask.from_surface(self.image)
@@ -490,6 +669,68 @@ class Exit(pygame.sprite.Sprite):
 
         if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
             self.flag_press = False
+
+
+class DeleteButton(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(create_sprites)
+        self.flag_press = False
+        self.image = load_image_buttons("delete.png", (127, 127, 127))
+        self.image = pygame.transform.scale(self.image, (125, 25))
+        self.image_press = pygame.transform.scale(self.image, (130, 30))
+        self.rect = self.image.get_rect()
+        self.rect.center = width * 0.02 + self.rect.width // 2, height * 0.76 + self.rect.height // 2
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self, event):
+        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) \
+                and self.rect.collidepoint(event.pos):
+            self.flag_press = True
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
+
+        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
+            self.flag_press = False
+
+
+class SaveButton(DeleteButton):
+    def __init__(self):
+        super().__init__()
+        self.flag_press = False
+        self.image = load_image_buttons("save.png", (127, 127, 127))
+        self.image = pygame.transform.scale(self.image, (125, 25))
+        self.image_press = pygame.transform.scale(self.image, (130, 30))
+        self.rect = self.image.get_rect()
+        self.rect.center = width * 0.8 + self.rect.width // 2, height * 0.76 + self.rect.height // 2
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+class SpikeButton(DeleteButton):
+    def __init__(self):
+        super().__init__()
+        self.flag_press = False
+        self.image = load_image_buttons("spike_button.png", (127, 127, 127))
+        self.image = pygame.transform.scale(self.image, (60, 60))
+        self.image_press = pygame.transform.scale(load_image_buttons("spike_button_press.png", (127, 127, 127)),
+                                                  (60, 60))
+        self.rect = self.image.get_rect()
+        self.rect.center = width * 0.37 + self.rect.width // 2, height * 0.8 + self.rect.height // 2
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+class BlockButton(DeleteButton):
+    def __init__(self):
+        super().__init__()
+        self.flag_press = False
+        self.image = load_image_buttons("block_button.png", (127, 127, 127))
+        self.image = pygame.transform.scale(self.image, (60, 60))
+        self.image_press = pygame.transform.scale(load_image_buttons("block_button_press.png", (127, 127, 127)),
+                                                  (60, 60))
+        self.rect = self.image.get_rect()
+        self.rect.center = width * 0.53 + self.rect.width // 2, height * 0.8 + self.rect.height // 2
+        self.mask = pygame.mask.from_surface(self.image)
 
 
 if __name__ == '__main__':
@@ -508,15 +749,24 @@ if __name__ == '__main__':
     settings_sprites = pygame.sprite.Group()
     troll_sprites = pygame.sprite.Group()
     tutorial_sprites = pygame.sprite.Group()
+    create_sprites = pygame.sprite.Group()
+
+    board = Board(34, 13, 0, 7, 25)
 
     exit = Exit()
     rate = Rate()
     tips = Tips()
+    slider = Slider(width * 0.4, height * 0.7, 170, 10)
 
-    board = Board(40, 25)
     play = Play()
     cube_style = CubeStyle()
+    settings = Settings()
     editor_level = EditorLevel()
+
+    spike = SpikeButton()
+    block = BlockButton()
+    delete = DeleteButton()
+    save = SaveButton()
 
     pygame.mixer.music.load('music\start.mp3')
     pygame.mixer.music.play()
