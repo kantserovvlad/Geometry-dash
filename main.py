@@ -343,6 +343,7 @@ def create_level_window(screen, size):
                 if exit.rect.collidepoint(event.pos):
                     exit.update(event)
                 else:
+                    board.clear(screen)
                     board.get_click(event.pos)
                 if spike.rect.collidepoint(event.pos) and is_pressed in [None, 1]:
                     mode = "spike"
@@ -351,12 +352,19 @@ def create_level_window(screen, size):
                     else:
                         is_pressed = 1
                     create_sprites.update(event)
-                if block.rect.collidepoint(event.pos) and is_pressed in [None, 2]:
-                    mode = "block"
+                if rotate_spike.rect.collidepoint(event.pos) and is_pressed in [None, 2]:
+                    mode = "rotate_spike"
                     if is_pressed == 2:
                         is_pressed = None
                     else:
                         is_pressed = 2
+                    create_sprites.update(event)
+                if block.rect.collidepoint(event.pos) and is_pressed in [None, 3]:
+                    mode = "block"
+                    if is_pressed == 3:
+                        is_pressed = None
+                    else:
+                        is_pressed = 3
                     create_sprites.update(event)
                 if delete.rect.collidepoint(event.pos):
                     delete.update(event)
@@ -676,7 +684,6 @@ class DeleteButton(pygame.sprite.Sprite):
         super().__init__(create_sprites)
         self.flag_press = False
         self.image = load_image_buttons("delete.png", (127, 127, 127))
-        self.image = pygame.transform.scale(self.image, (125, 25))
         self.image_press = pygame.transform.scale(self.image, (130, 30))
         self.rect = self.image.get_rect()
         self.rect.center = width * 0.02 + self.rect.width // 2, height * 0.76 + self.rect.height // 2
@@ -700,8 +707,7 @@ class SaveButton(DeleteButton):
         super().__init__()
         self.flag_press = False
         self.image = load_image_buttons("save.png", (127, 127, 127))
-        self.image = pygame.transform.scale(self.image, (125, 25))
-        self.image_press = pygame.transform.scale(self.image, (130, 30))
+        self.image_press = pygame.transform.scale(self.image, (167, 30))
         self.rect = self.image.get_rect()
         self.rect.center = width * 0.8 + self.rect.width // 2, height * 0.76 + self.rect.height // 2
         self.mask = pygame.mask.from_surface(self.image)
@@ -717,6 +723,19 @@ class SpikeButton(DeleteButton):
                                                   (60, 60))
         self.rect = self.image.get_rect()
         self.rect.center = width * 0.37 + self.rect.width // 2, height * 0.8 + self.rect.height // 2
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+class RotateSpikeButton(DeleteButton):
+    def __init__(self):
+        super().__init__()
+        self.flag_press = False
+        self.image = load_image_buttons("rotate_spike_button.png", (127, 127, 127))
+        self.image = pygame.transform.scale(self.image, (60, 60))
+        self.image_press = pygame.transform.scale(load_image_buttons("rotate_spike_button_press.png", (127, 127, 127)),
+                                                  (60, 60))
+        self.rect = self.image.get_rect()
+        self.rect.center = width * 0.45 + self.rect.width // 2, height * 0.8 + self.rect.height // 2
         self.mask = pygame.mask.from_surface(self.image)
 
 
@@ -763,6 +782,7 @@ if __name__ == '__main__':
     settings = Settings()
     editor_level = EditorLevel()
 
+    rotate_spike = RotateSpikeButton()
     spike = SpikeButton()
     block = BlockButton()
     delete = DeleteButton()

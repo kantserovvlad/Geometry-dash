@@ -35,17 +35,6 @@ def create_level(n):
         elif n == 3:
             square = Obstacle(3, 'game/square.png', point_cube)
         all_sprites.update('')
-        # sprite = pygame.sprite.Sprite()
-        # if n == 1:
-        #     sprite.image = load_image("game/thorn1.png")
-        # elif n == 2:
-        #     sprite.image = load_image("game/thorn2.png")
-        # else:
-        #     sprite.image = load_image("game/square.png")
-        # sprite.rect = sprite.image.get_rect()
-        # sprite.rect.x = x * 30
-        # sprite.rect.y = y * 30
-        # all_sprites.add(sprite)
 
 
 class Obstacle(pygame.sprite.Sprite):
@@ -57,7 +46,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         if self.coord == self.n:
-            print('вход')
+            print('вход', self.image)
             self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
         else:
             print('рабоает 1')
