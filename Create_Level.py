@@ -22,51 +22,28 @@ def load_image(name, colorkey=None):
 def create_level(n):
     if point_cube is not None:
         x, y = point_cube
-        if board.board[y][x] == 0:
-            board.board[y][x] = n
-        else:
-            board.board[y][x] = 0
+        board.board[y][x] = n
         # -----------------------
-        n = board.board[y][x]
         if n == 1:
             thorn1 = Obstacle(1, 'game/thorn1.png', point_cube)
         elif n == 2:
             thorn2 = Obstacle(2, 'game/thorn2.png', point_cube)
         elif n == 3:
             square = Obstacle(3, 'game/square.png', point_cube)
-        all_sprites.update('')
-        # sprite = pygame.sprite.Sprite()
-        # if n == 1:
-        #     sprite.image = load_image("game/thorn1.png")
-        # elif n == 2:
-        #     sprite.image = load_image("game/thorn2.png")
-        # else:
-        #     sprite.image = load_image("game/square.png")
-        # sprite.rect = sprite.image.get_rect()
-        # sprite.rect.x = x * 30
-        # sprite.rect.y = y * 30
-        # all_sprites.add(sprite)
 
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, n, image, point):
-        super().__init__(all_sprites)
+        super().__init__(sprites_obstacles)
         self.n = n
-        self.coord = board.board[point[1]][point[0]]
+        self.point = point
         self.image = load_image(image)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        if self.coord == self.n:
-            print('вход')
-            self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
-        else:
-            print('рабоает 1')
+        self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
 
     def update(self, event):
-        if self.coord == self.n:
-            self.rect.center = self.rect.center
-        else:
-            print('работает 2')
+        self.rect.center = self.rect.center
 
 
 class Board:
@@ -104,6 +81,10 @@ class Board:
                                                                point[1] * self.cell_size + self.top,
                                                                self.cell_size, self.cell_size), 1)
 
+    def clear(self):
+        self.board = [[0] * self.width for _ in range(self.height)]
+        self.render(screen)
+
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, point, image, image_press, action):
@@ -136,18 +117,24 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Geometry dash')
     pygame.display.set_icon(pygame.image.load("images/icon.png"))
+    background = pygame.Surface(size)
 
     fps = 100
     v = 40
     clock = pygame.time.Clock()
 
+    # Создаём группы спрайтов
     all_sprites = pygame.sprite.Group()
     all_sprites_front = pygame.sprite.Group()
-    all_sprites_back = pygame.sprite.Group()
+    sprites_obstacles = pygame.sprite.Group()
 
     board = Board(840 // 30, 330 // 30)
+    # ---------------------------------------
+    # Теперь создаю кнопки
     pause = Button((width - 50, 50), 'buttons/pause.png', 'buttons/pause_press.png', '')
-    delete = Button((77, height - 77), 'buttons/delete.png', 'buttons/delete.png', '')
+    delete = Button((77, height - 77), 'buttons/delete.png', 'buttons/delete.png',
+                    'create_level(0)')
+    clear = Button((77, height - 35), 'buttons/clear.png', 'buttons/clear.png', 'board.clear()')
     save_level = Button((width - 100, height - 77), 'buttons/save.png', 'buttons/save.png', '')
     add_square = Button((width // 2, height - 60), 'buttons/add_square.png', 'buttons/add_square-press.png',
                         'create_level(3)')
@@ -155,11 +142,11 @@ if __name__ == '__main__':
                         'create_level(1)')
     add_thorn2 = Button((width // 2 + 100, height - 60), 'buttons/add_thorn2.png', 'buttons/add_thorn2-press.png',
                         'create_level(2)')
-
+    # -----------------------------------------
     pygame.mixer.music.load('music/start.mp3')
-    pygame.mixer.music.play()
+    pygame.mixer.music.play(10)
     running = True
-    point_cube = None
+    point_cube = None  # Какой пользователь выбрал место
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -177,13 +164,22 @@ if __name__ == '__main__':
                     point_cube = board.get_cell(event.pos)
             if event.type == pygame.MOUSEBUTTONUP:
                 all_sprites_front.update(event)
-        all_sprites_back.draw(screen)
-        screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))
-        pygame.draw.rect(screen, '#1B233D', (0, 330, width, height))
+        # -------------------------------------
+        # Проходим по каждому объекту-препятствию
+        for item in sprites_obstacles:
+            # Если не совпдает номер приепятсвия и номер в поле, то удаляем это препятсвие
+            if board.board[item.point[1]][item.point[0]] != item.n:
+                item.kill()
+                sprites_obstacles.clear(screen, background)
+                sprites_obstacles.draw(screen)
+        # --------------------------------------
+        screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))  # Создаём фон
+        pygame.draw.rect(screen, '#1B233D', (0, 330, width, height))  # Дополнительнй прямоугольник
+        sprites_obstacles.draw(screen)  # Отрисовываем препятсвия
         all_sprites.draw(screen)
-        all_sprites.update('')
-        board.render(screen, point_cube)
-        all_sprites_front.draw(screen)
+        board.render(screen, point_cube)  # Рисуем клеточное поле
+        all_sprites_front.draw(screen)  # Отрисовываем те спрайты, которые должны быть впереди поля
+        # -----------------------------
         clock.tick(fps)
         pygame.display.flip()
     pygame.mixer.music.stop()
