@@ -1,6 +1,7 @@
 import os
 import sys
 import pygame
+from PyQt5.QtWidgets import QInputDialog, QWidget
 
 
 def load_image(name, colorkey=None):
@@ -17,6 +18,19 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+
+def save_level():
+    files = os.listdir('levels')
+    n = 0
+    while True:
+        n += 1
+        if f'level{n}.txt' not in files:
+            file = open(f'levels/level{n}.txt', 'w')
+            for i in board.board:
+                file.write(''.join(str(j) for j in i))
+                file.write('\n')
+            return
 
 
 def create_level(n):
@@ -106,7 +120,14 @@ class Button(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.center = x, y
 
-        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
+        if event.type == pygame.MOUSEMOTION and not self.rect.collidepoint(event.pos) and self.flag_press:
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
+            self.flag_press = False
+
+        if event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos) and self.flag_press:
             exec(self.action)
             self.flag_press = False
 
@@ -135,13 +156,14 @@ if __name__ == '__main__':
     delete = Button((77, height - 77), 'buttons/delete.png', 'buttons/delete.png',
                     'create_level(0)')
     clear = Button((77, height - 35), 'buttons/clear.png', 'buttons/clear.png', 'board.clear()')
-    save_level = Button((width - 100, height - 77), 'buttons/save.png', 'buttons/save.png', '')
-    add_square = Button((width // 2, height - 60), 'buttons/add_square.png', 'buttons/add_square-press.png',
-                        'create_level(3)')
-    add_thorn1 = Button((width // 2 - 100, height - 60), 'buttons/add_thorn1.png', 'buttons/add_thorn1-press.png',
-                        'create_level(1)')
-    add_thorn2 = Button((width // 2 + 100, height - 60), 'buttons/add_thorn2.png', 'buttons/add_thorn2-press.png',
-                        'create_level(2)')
+    save = Button((width - 100, height - 77), 'buttons/save.png',
+                  'buttons/save.png', "save_level()")
+    add_square = Button((width // 2, height - 60), 'buttons/add_square.png',
+                        'buttons/add_square-press.png', 'create_level(3)')
+    add_thorn1 = Button((width // 2 - 100, height - 60), 'buttons/add_thorn1.png',
+                        'buttons/add_thorn1-press.png', 'create_level(1)')
+    add_thorn2 = Button((width // 2 + 100, height - 60), 'buttons/add_thorn2.png',
+                        'buttons/add_thorn2-press.png', 'create_level(2)')
     # -----------------------------------------
     pygame.mixer.music.load('music/start.mp3')
     pygame.mixer.music.play(10)
@@ -163,6 +185,8 @@ if __name__ == '__main__':
                 else:
                     point_cube = board.get_cell(event.pos)
             if event.type == pygame.MOUSEBUTTONUP:
+                all_sprites_front.update(event)
+            if event.type == pygame.MOUSEMOTION:
                 all_sprites_front.update(event)
         # -------------------------------------
         # Проходим по каждому объекту-препятствию
