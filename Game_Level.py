@@ -19,57 +19,15 @@ def load_image(name, colorkey=None):
     return image
 
 
-class Board:
-    def __init__(self, width, height, left, top, cell_size):
-        self.width = width
-        self.height = height
-        self.board = [[0] * width for _ in range(height)]
-        self.left = left
-        self.top = top
-        self.cell_size = cell_size
-
-    def render(self, screen):
-        for y in range(self.height):
-            for x in range(self.width):
-                if self.board[y][x]:
-                    pygame.draw.rect(screen, pygame.Color(255, 255, 255),
-                                     (x * self.cell_size + self.left,
-                                      y * self.cell_size + self.top,
-                                      self.cell_size, self.cell_size), 1)
-                else:
-                    pygame.draw.rect(screen, pygame.Color(0, 0, 0),
-                                     (x * self.cell_size + self.left,
-                                      y * self.cell_size + self.top,
-                                      self.cell_size, self.cell_size), 1)
-
-    def on_click(self, cell):
-        self.board[cell[1]][cell[0]] = (self.board[cell[1]][cell[0]] + 1) % 2
-
-    def get_cell(self, mouse_pos):
-        cell_x = (mouse_pos[0] - self.left) // self.cell_size
-        cell_y = (mouse_pos[1] - self.top) // self.cell_size
-        if cell_x < 0 or cell_x >= self.width or cell_y < 0 or cell_y >= self.height:
-            return None
-        return cell_x, cell_y
-
-    def get_click(self, mouse_pos):
-        cell = self.get_cell(mouse_pos)
-        if cell:
-            self.on_click(cell)
-
-    def clear(self, screen):
-        self.board = [[0] * width for _ in range(height)]
-        self.render(screen)
-
-
 def read_file(name='level1.txt'):
     level = open(f'levels/{name}', 'r', encoding='utf-8').readlines()
     for i in range(len(board.board)):
         for j in range(len(board.board[i])):
-            board.board[i][j] = int(level[i][j])
-            create_level(int(level[i][j]), [i, j])
-    for i in board.board:
-        print(i)
+            try:
+                board.board[i][j] = int(level[i][j])
+                create_level(int(level[i][j]), [j, i])
+            except Exception as ex:
+                board.board[i][j] = 0
 
 
 def create_level(n, point_cube):
@@ -94,7 +52,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
 
     def update(self, event):
-        self.rect.center = self.rect.center
+        self.rect.x -= int(v / fps)
 
 
 class Board:
@@ -110,6 +68,17 @@ class Board:
         self.left = left
         self.top = top
         self.cell_size = cell_size
+
+    def render(self, screen):
+        for y in range(self.height):
+            for x in range(self.width):
+                pygame.draw.rect(screen, pygame.Color(0, 0, 0), (x * self.cell_size + self.left,
+                                                                 y * self.cell_size + self.top,
+                                                                 self.cell_size, self.cell_size), 1)
+
+    def update(self):
+        self.left -= int(v / fps)
+        self.render(screen)
 
     def get_cell(self, mouse_pos):
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
@@ -131,15 +100,14 @@ if __name__ == '__main__':
     background = pygame.Surface(size)
 
     fps = 100
-    v = 40
+    v = 1000
     clock = pygame.time.Clock()
 
     # Создаём группы спрайтов
-    all_sprites = pygame.sprite.Group()
     all_sprites_front = pygame.sprite.Group()
     sprites_obstacles = pygame.sprite.Group()
 
-    board = Board(840 // 30, 330 // 30)
+    board = Board(28 * 5, 11)
     # -----------------------------------------
     pygame.mixer.music.load('music/start.mp3')
     pygame.mixer.music.play(10)
@@ -149,17 +117,11 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                all_sprites_front.update(event)
-            if event.type == pygame.MOUSEBUTTONUP:
-                all_sprites_front.update(event)
-            if event.type == pygame.MOUSEMOTION:
-                all_sprites_front.update(event)
         # -------------------------------------
         screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))  # Создаём фон
         pygame.draw.rect(screen, '#1B233D', (0, 330, width, height))  # Дополнительнй прямоугольник
         sprites_obstacles.draw(screen)  # Отрисовываем препятсвия
-        all_sprites.draw(screen)
+        sprites_obstacles.update(event)
         all_sprites_front.draw(screen)  # Отрисовываем те спрайты, которые должны быть впереди поля
         # -----------------------------
         clock.tick(fps)
