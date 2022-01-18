@@ -909,6 +909,7 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONUP:
                 all_sprites.update(event)
         screen.blit(load_image_buttons('../backgrounds/fon1.jpg'), (0, 0))
+        screen.blit(load_image("Name_game.png"), (width // 2 - 200, 100))
         all_sprites.draw(screen)
         clock.tick(fps)
         pygame.display.flip()
