@@ -43,8 +43,10 @@ def draw_tutorial(screen):
 
 def draw_name_level(screen, num):
     if num is not None:
+        global music_name
         info = dict_of_levels[num]
-        print(info)
+        music_name = info[2]
+        print(music_name)
 
         font = pygame.font.Font(None, 60)
         text = font.render(info[0], True, (255, 255, 255))
@@ -107,16 +109,14 @@ def load_image_buttons(name, colorkey=None):
 
 
 def create_level(n, point_cube):
-    if point_cube is not None:
-        x, y = point_cube
-        board.board[y][x] = n
-        # -----------------------
-        if n == 1:
-            thorn1 = Obstacle(1, 'game/thorn1.png', point_cube)
-        elif n == 2:
-            thorn2 = Obstacle(2, 'game/thorn2.png', point_cube)
-        elif n == 3:
-            square = Obstacle(3, 'game/square.png', point_cube)
+    if n == 1:
+        thorn1 = Obstacle(1, 'game/thorn1.png', point_cube)
+    elif n == 2:
+        thorn2 = Obstacle(2, 'game/thorn2.png', point_cube)
+    elif n == 3:
+        square = Obstacle(3, 'game/square.png', point_cube)
+    else:
+        pass
 
 
 def draw_cube(style_cube, color1, color2):
@@ -190,6 +190,16 @@ def func(doing):
         else:
             num_level = len(dict_of_levels.keys())
 
+
+def read_file(name='level1.txt'):
+    level = open(f'levels/{name}', 'r', encoding='utf-8').readlines()
+    for i in range(len(game_board.board)):
+        for j in range(len(game_board.board[i])):
+            try:
+                game_board.board[i][j] = int(level[i][j])
+                create_level(int(level[i][j]), [j, i])
+            except Exception as ex:
+                game_board.board[i][j] = 0
 
 # -----------------функции окон---------------
 
@@ -388,20 +398,29 @@ def create_level_window(screen, size):
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                all_sprites_front.update(event)
-                # Проверки нажатия на квадратик
-                if point_cube == board.get_cell(event.pos):
-                    point_cube = None
-                elif board.get_cell(event.pos) is None:
-                    pass
-                elif point_cube is None:
-                    point_cube = board.get_cell(event.pos)
+                if exit.rect.collidepoint(event.pos):
+                    create_level_sprites.update(event)
                 else:
-                    point_cube = board.get_cell(event.pos)
+                    all_sprites_front.update(event)
+
+                    # Проверки нажатия на квадратик
+                    if point_cube == board.get_cell(event.pos):
+                        point_cube = None
+                    elif board.get_cell(event.pos) is None:
+                        pass
+                    elif point_cube is None:
+                        point_cube = board.get_cell(event.pos)
+                    else:
+                        point_cube = board.get_cell(event.pos)
             if event.type == pygame.MOUSEBUTTONUP:
-                all_sprites_front.update(event)
+                if exit.rect.collidepoint(event.pos):
+                    running = False
+                    create_level_sprites.update(event)
+                else:
+                    all_sprites_front.update(event)
+
         # -------------------------------------
         # Проходим по каждому объекту-препятствию
         for item in sprites_obstacles:
@@ -414,9 +433,9 @@ def create_level_window(screen, size):
         screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))  # Создаём фон
         pygame.draw.rect(screen, '#1B233D', (0, 330, width, height))  # Дополнительнй прямоугольник
         sprites_obstacles.draw(screen)  # Отрисовываем препятсвия
-        create_level_sprites.draw(screen)
         board.render(screen, point_cube)  # Рисуем клеточное поле
         all_sprites_front.draw(screen)  # Отрисовываем те спрайты, которые должны быть впереди поля
+        create_level_sprites.draw(screen)
         # -----------------------------
         clock.tick(fps)
         pygame.display.flip()
@@ -436,10 +455,44 @@ def load_level_window(screen, size):
                 load_level_sprites.update(event)
                 if exit2.rect.collidepoint(event.pos):
                     running = False
+                if back.rect.collidepoint(event.pos):
+                    game_window(screen)
 
         load_level_sprites.draw(screen)
         draw_name_level(screen, num_level)
         pygame.display.flip()
+
+
+def game_window(screen):
+    # -----------------------------------------
+    read_file()
+    global flag
+    global music_name
+    pygame.mixer.music.load(music_name)
+    pygame.mixer.music.play(10)
+    running = True
+    while running:
+        pygame.time.delay(30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if flag:
+                        player.jump()
+                        flag = False
+
+        # -------------------------------------
+        screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))  # Создаём фон
+        pygame.draw.rect(screen, '#1B233D', (0, 330, width, height))  # Дополнительнй прямоугольник
+        game_sprites_obstacles.draw(screen)  # Отрисовываем препятсвия
+        game_sprites_obstacles.update()
+        player.cjump()
+        game_cube_sprites.draw(screen)
+        # -----------------------------
+        clock.tick(fps)
+        pygame.display.flip()
+    pygame.mixer.music.stop()
 
 
 # -----------------классы---------------
@@ -544,7 +597,7 @@ class Styles(pygame.sprite.Sprite):
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, n, image, point):
-        super().__init__(sprites_obstacles)
+        super().__init__(game_sprites_obstacles, sprites_obstacles)
         self.n = n
         self.point = point
         self.image = load_image(image)
@@ -552,8 +605,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
 
-    def update(self, event):
-        self.rect.center = self.rect.center
+    def update(self):
+        self.rect.x -= int(v / fps)
 
 
 class Board:
@@ -578,6 +631,10 @@ class Board:
                                                                  self.cell_size, self.cell_size), 1)
         if select is not None:
             self.select_cube(select)
+
+    def update(self):
+        self.left -= int(v / fps)
+        self.render(screen)
 
     def get_cell(self, mouse_pos):
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
@@ -786,7 +843,7 @@ class Tips(Rate):
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(troll_sprites, settings_sprites, cube_sprites, tutorial_sprites, create_sprites)
+        super().__init__(troll_sprites, settings_sprites, cube_sprites, tutorial_sprites, create_sprites, create_level_sprites)
         self.flag_press = False
         self.image = load_image("cube\exit.png", "white")
         self.image_press = load_image("cube\exit_pressed.png", "white")
@@ -807,6 +864,51 @@ class Exit(pygame.sprite.Sprite):
             self.flag_press = False
 
 
+class Cube(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(game_cube_sprites)
+        self.is_jump = False
+        self.up = False
+        self.down = False
+        self.angle = 0
+        self.speed = 10
+        self.image = load_image("cube/cube.png", "white")
+        self.orig_image = self.rot_image = self.image = pygame.transform.scale(self.image, (30, 30))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect()
+        self.rect.center = 150 + self.image.get_width(), 330 - (self.image.get_height() // 2)
+
+    def jump(self):
+        self.angle = 0
+        x, y = self.rect.center
+        y -= self.speed
+        self.rect.center = x, y
+        self.is_jump = True
+        self.up = True
+
+    def cjump(self):
+        global flag
+        x, y = self.rect.center
+        if self.is_jump:
+            self.angle -= 180 / 12
+            self.rot_image = pygame.transform.rotate(self.orig_image, self.angle % 360)
+            self.image = self.rot_image
+            if y > 220 and self.up:
+                y -= self.speed
+                if y <= 220:
+                    self.down = True
+                    self.up = False
+            if y < 330 - (self.orig_image.get_height() // 2) and self.down:
+                y += self.speed
+                if y >= 330 - (self.orig_image.get_height() // 2):
+                    self.down = False
+                    self.up = False
+                    self.is_jump = False
+                    flag = True
+                    self.orig_image = self.image
+            self.rect.center = x, y
+
+
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 840, 440
@@ -818,12 +920,13 @@ if __name__ == '__main__':
     pygame.mixer.music.play()
     pygame.mixer.music.set_volume(0.1)
 
-    fps = 100
-    v = 40
+    fps = 5000
+    v = 50000
     clock = pygame.time.Clock()
 
     num_level = 1
     num = None
+    music_name = ""
 
     dict_of_levels = {1: ["Level Test", "level_test.txt", "music\Bossfight-Vextron.mp3"],
                       2: ["Level Test - 2", "level_test_2.txt", "music\Bossfight-Vextron.mp3"],
@@ -833,6 +936,9 @@ if __name__ == '__main__':
     # -------------группы спрайтов-----------------
 
     all_sprites = pygame.sprite.Group()
+
+    game_cube_sprites = pygame.sprite.Group()
+    game_sprites_obstacles = pygame.sprite.Group()
 
     create_level_sprites = pygame.sprite.Group()
     all_sprites_front = pygame.sprite.Group()
@@ -847,6 +953,9 @@ if __name__ == '__main__':
     load_level_sprites = pygame.sprite.Group()
 
     board = Board(840 // 30, 330 // 30)
+    game_board = Board(28 * 5, 11)
+    player = Cube()
+    flag = True
 
     # -----------------создание спрайтов главного экрана---------------
     play = Play()
@@ -862,7 +971,6 @@ if __name__ == '__main__':
 
     # -----------------создание спрайтов для экрана создания уровня---------------
 
-    pause = Button((width - 50, 50), 'buttons/pause.png', 'buttons/pause_press.png', '')
     delete = Button((77, height - 77), 'buttons/delete.png', 'buttons/delete.png',
                     'create_level(0, point_cube)')
     clear = Button((77, height - 35), 'buttons/clear.png', 'buttons/clear.png', 'board.clear()')
@@ -909,6 +1017,7 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONUP:
                 all_sprites.update(event)
         screen.blit(load_image_buttons('../backgrounds/fon1.jpg'), (0, 0))
+        screen.blit(load_image("Name_game.png"), (width // 2 - 200, 100))
         all_sprites.draw(screen)
         clock.tick(fps)
         pygame.display.flip()
