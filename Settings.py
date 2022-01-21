@@ -19,6 +19,23 @@ def load_image(name, colorkey=None):
     return image
 
 
+def draw_text():
+    font = pygame.font.SysFont("Calibri", 50)
+    text = font.render("Невозможно подключиться к сети :(", True, (0, 255, 0))
+    text_x = width * 0.09
+    text_y = height * 0.1
+    screen.blit(text, (text_x, text_y))
+
+
+def draw_settings_tutorial(text):
+    for k, v in text.items():
+        font = pygame.font.SysFont("Calibri", v[1])
+        text = font.render(k, True, (0, 255, 0))
+        text_x = width // 2 - text.get_width() // 2
+        text_y = v[0]
+        screen.blit(text, (text_x, text_y))
+
+
 def tutorial_window():
     running = True
     while running:
@@ -31,46 +48,15 @@ def tutorial_window():
                 tutorial_sprites.update(event)
                 if exit_btn.rect.collidepoint(event.pos):
                     running = False
-        screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))
+        screen.fill((54, 85, 110))
         clock.tick(fps)
-        draw_tutorial()
+        draw_settings_tutorial(text={"Управление": [height * 0.1, 80], "Space (пробел) - прыжок": [height * 0.3, 50]})
         tutorial_sprites.draw(screen)
         pygame.display.flip()
 
 
-def draw_text():
-    font = pygame.font.Font(None, 50)
-    text = font.render("Невозможно подключиться к сети :(", True, (0, 255, 0))
-    text_x = width * 0.2
-    text_y = height * 0.1
-    screen.blit(text, (text_x, text_y))
-
-
-def draw_settings():
-    text = {"Настройки": [height * 0.1, 80], "Громкость": [height * 0.6, 50]}
-    for k, v in text.items():
-        font = pygame.font.Font(None, v[1])
-        text = font.render(k, True, (0, 255, 0))
-        text_x = width // 2 - text.get_width() // 2
-        text_y = v[0]
-        screen.blit(text, (text_x, text_y))
-
-
-def draw_tutorial():
-    text = {"Управление": [height * 0.1, 80], "Space (пробел) - прыжок": [height * 0.3, 50]}
-    for k, v in text.items():
-        font = pygame.font.Font(None, v[1])
-        text = font.render(k, True, (0, 255, 0))
-        text_x = width // 2 - text.get_width() // 2
-        text_y = v[0]
-        screen.blit(text, (text_x, text_y))
-
-
 def troll_window():
-    troll_screen = screen
     width, height = size
-    exit = Exit()
-
     running = True
     while running:
         for event in pygame.event.get():
@@ -80,14 +66,14 @@ def troll_window():
                 troll_sprites.update(event)
             if event.type == pygame.MOUSEBUTTONUP:
                 troll_sprites.update(event)
-                if exit.rect.collidepoint(event.pos):
+                if exit_btn.rect.collidepoint(event.pos):
                     running = False
 
-        screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))
+        screen.fill((54, 85, 110))
         image = load_image("no_internet.png", "white")
         image = pygame.transform.scale(image, (300, 300))
-        screen.blit(image, (width // 2 - image.get_width() // 2, height * 0.3))
-        troll_sprites.draw(troll_screen)
+        screen.blit(image, (width // 2 - image.get_width() // 2, height * 0.25))
+        troll_sprites.draw(screen)
         draw_text()
         pygame.display.flip()
 
@@ -102,20 +88,17 @@ def settings_window():
                 volume = slider.handle_event(event.pos[0], event.pos[1])
                 if volume:
                     pygame.mixer.music.set_volume(volume / 100)
-
                 settings_sprites.update(event)
             if event.type == pygame.MOUSEBUTTONUP:
                 settings_sprites.update(event)
-                if exit_btn.rect.collidepoint(event.pos):
-                    running = False
                 if rate.rect.collidepoint(event.pos):
                     troll_window()
                 if tips.rect.collidepoint(event.pos):
                     tutorial_window()
 
-        screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))
+        screen.fill((54, 85, 110))
         clock.tick(fps)
-        draw_settings()
+        draw_settings_tutorial(text={"Настройки": [height * 0.1, 80], "Громкость": [height * 0.6, 50]})
         settings_sprites.draw(screen)
         slider.draw()
         pygame.display.flip()
@@ -186,7 +169,6 @@ class Slider:
                 self.circle_x = self.sliderRect.x + self.sliderRect.w
             else:
                 self.circle_x = x
-            print(self.circle_x)
             self.flag = True
             self.draw()
             self.update_volume(x)
@@ -194,12 +176,12 @@ class Slider:
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, point, image, image_press, action):
-        super().__init__(all_sprites)
+    def __init__(self, point, image, image_press, fon, action, *sprite_groups):
+        super().__init__(*sprite_groups)
         self.action = action
         self.flag_press = False
-        self.image = load_image(image)
-        self.image_press = load_image(image_press)
+        self.image = load_image(image, fon)
+        self.image_press = load_image(image_press, fon)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.center = point
@@ -213,73 +195,9 @@ class Button(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.center = x, y
 
-        if event.type == pygame.MOUSEMOTION and self.flag_press:
-            if not self.rect.collidepoint(event.pos):
-                self.flag_press = False
-                x, y, = self.rect.center
-                self.image, self.image_press = self.image_press, self.image
-                self.rect = self.image.get_rect()
-                self.rect.center = x, y
-
         if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
             exec(self.action)
             self.flag_press = False
-
-
-class Exit(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(troll_sprites, tutorial_sprites)
-        self.flag_press = False
-        self.image = load_image("cube/exit.png", "white")
-        self.image_press = load_image("cube/exit_pressed.png", "white")
-        self.rect = self.image.get_rect()
-        self.rect.center = width * 0.025 + self.rect.width // 2, height * 0.06 + self.rect.height // 2
-        self.mask = pygame.mask.from_surface(self.image)
-
-    def update(self, event):
-        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
-                self.rect.collidepoint(event.pos):
-            self.flag_press = True
-            x, y, = self.rect.center
-            self.image, self.image_press = self.image_press, self.image
-            self.rect = self.image.get_rect()
-            self.rect.center = x, y
-
-        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
-            self.flag_press = False
-
-
-class Rate(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(settings_sprites)
-        self.flag_press = False
-        self.image = load_image("buttons/rate.png", (127, 127, 127))
-        self.image_press = pygame.transform.scale(self.image, (240, 100))
-        self.rect = self.image.get_rect()
-        self.rect.center = width * 0.15 + self.rect.width // 2, height * 0.3 + self.rect.height // 2
-        self.mask = pygame.mask.from_surface(self.image)
-
-    def update(self, event):
-        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) \
-                and self.rect.collidepoint(event.pos):
-            self.flag_press = True
-            x, y, = self.rect.center
-            self.image, self.image_press = self.image_press, self.image
-            self.rect = self.image.get_rect()
-            self.rect.center = x, y
-
-        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
-            self.flag_press = False
-
-
-class Tips(Rate):
-    def __init__(self):
-        super().__init__()
-        self.image = load_image("buttons/tips.png", (127, 127, 127))
-        self.image_press = pygame.transform.scale(self.image, (240, 100))
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = width * 0.6, height * 0.3
-        self.mask = pygame.mask.from_surface(self.image)
 
 
 if __name__ == '__main__':
@@ -289,23 +207,25 @@ if __name__ == '__main__':
     pygame.display.set_caption('Geometry dash')
     pygame.display.set_icon(pygame.image.load("images/icon.png"))
 
-    pygame.mixer.music.load('music/start.mp3')  # загружаем фоновую музыку
-    pygame.mixer.music.play()
+    """pygame.mixer.music.load('music/start.mp3')  # загружаем фоновую музыку
+    pygame.mixer.music.play()"""
 
     # Создаём группы спрайтов
-    all_sprites = pygame.sprite.Group()
     settings_sprites = pygame.sprite.Group()  # группа спайтов основного окна настроек
     troll_sprites = pygame.sprite.Group()  # группа спайтов окна "Без Интернета"
     tutorial_sprites = pygame.sprite.Group()  # группа спайтов окна управления/обучения
     # -------------------------Создаём кнопки------------------------------------------------
-    exit_btn = Exit()
-    rate = Rate()
-    tips = Tips()
-    slider = Slider(width * 0.4, height * 0.7, 170, 10)
+    exit_btn = Button((width * 0.025 + 31, height * 0.06 + 29),
+                      "cube/exit.png", "cube/exit_pressed.png", "white", '', troll_sprites, tutorial_sprites)
+    rate = Button((width * 0.15 + 105, height * 0.3 + 40),
+                  "buttons/rate.png", "buttons/rate_pressed.png", "white", '', settings_sprites)
+    tips = Button((width * 0.6 + 105, height * 0.3 + 40),
+                  "buttons/tips.png", "buttons/tips_pressed.png", "white", '', settings_sprites)
+    slider = Slider(width * 0.4, height * 0.75, 170, 10)
     # -----------------------Основные параметры-----------------------------------------------
     fps = 100
     clock = pygame.time.Clock()
 
     settings_window()
-    pygame.mixer.music.stop()
+    """pygame.mixer.music.stop()"""
     pygame.quit()

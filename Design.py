@@ -78,7 +78,8 @@ def draw_cube(style_cube, color1, color2):
     return pic
 
 
-def custom_cube_window(screen, size):
+def custom_cube_window():
+    global size
     width, height = size
     style_cube, color1, color2 = None, None, None
     main_cube = pygame.sprite.Group()
@@ -86,8 +87,6 @@ def custom_cube_window(screen, size):
 
     styles = {"style1.png": (width * 0.17, height * 0.05), "style2.png": (width * 0.17, height * 0.225),
               "style3.png": (width * 0.17, height * 0.4), "style4.png": (width * 0.17, height * 0.575)}
-
-    customize_screen = screen
 
     for name, coords in styles.items():
         style = Styles(name, coords)
@@ -106,12 +105,11 @@ def custom_cube_window(screen, size):
             sprite.rect.x = 625
             sprite.rect.y = 180
 
-    pygame.draw.rect(customize_screen, (87, 94, 83), (0, 0, width, height * 0.8))
-    pygame.draw.rect(customize_screen, (10, 10, 10), (0, height * 0.8, width, height))
-    pygame.draw.line(customize_screen, pygame.Color("white"), (width * 0.25, height * 0.82),
+    pygame.draw.rect(screen, (87, 94, 83), [0, 0, width, height * 0.8])
+    pygame.draw.rect(screen, (10, 10, 10), [0, height * 0.8, width, height])
+    pygame.draw.line(screen, pygame.Color("white"), (width * 0.25, height * 0.82),
                      (width * 0.75, height * 0.82),
                      width=2)
-    exit_button = Exit()
     pygame.display.flip()
     running = True
     while running:
@@ -123,10 +121,10 @@ def custom_cube_window(screen, size):
                 x, y = event.pos[0], event.pos[1]
 
                 if 625 <= x <= 825 and 40 <= y <= 140:
-                    c = customize_screen.get_at(event.pos)
+                    c = screen.get_at(event.pos)
                     color1 = c[0], c[1], c[2]
                 if 625 <= x <= 825 and 180 <= y <= 280:
-                    c = customize_screen.get_at(event.pos)
+                    c = screen.get_at(event.pos)
                     color2 = c[0], c[1], c[2]
 
                 if width * 0.17 <= x <= width * 0.17 + 104 and 22 <= y <= 92:
@@ -177,27 +175,27 @@ def custom_cube_window(screen, size):
             sprite.rect = sprite.image.get_rect()
             sprite.rect.x, sprite.rect.y = 350, 240
 
-            pygame.draw.rect(customize_screen, (87, 94, 83), (0, 0, width, height * 0.8))
-            pygame.draw.rect(customize_screen, (10, 10, 10), (0, height * 0.8, width, height))
-            pygame.draw.line(customize_screen, pygame.Color("white"), (width * 0.25, height * 0.82),
+            pygame.draw.rect(screen, (87, 94, 83), [0, 0, width, height * 0.8])
+            pygame.draw.rect(screen, (10, 10, 10), [0, height * 0.8, width, height])
+            pygame.draw.line(screen, pygame.Color("white"), (width * 0.25, height * 0.82),
                              (width * 0.75, height * 0.82), width=2)
-        main_cube.draw(customize_screen)
+        main_cube.draw(screen)
         main_cube = pygame.sprite.Group()
-        cube_sprites.draw(customize_screen)
-        all_sprites.draw(customize_screen)
+        cube_sprites.draw(screen)
+        all_sprites.draw(screen)
         pygame.display.flip()
 
 
-class Exit(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__(troll_sprites, settings_sprites, cube_sprites,
-                         tutorial_sprites, create_sprites, create_level_sprites)
+class Button(pygame.sprite.Sprite):
+    def __init__(self, point, image, image_press, fon, action, *sprite_groups):
+        super().__init__(*sprite_groups)
+        self.action = action
         self.flag_press = False
-        self.image = load_image("cube/exit.png", "white")
-        self.image_press = load_image("cube/exit_pressed.png", "white")
+        self.image = load_image(image, fon)
+        self.image_press = load_image(image_press, fon)
         self.rect = self.image.get_rect()
-        self.rect.center = width * 0.025 + self.rect.width // 2, height * 0.06 + self.rect.height // 2
         self.mask = pygame.mask.from_surface(self.image)
+        self.rect.center = point
 
     def update(self, event):
         if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
@@ -209,6 +207,7 @@ class Exit(pygame.sprite.Sprite):
             self.rect.center = x, y
 
         if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
+            exec(self.action)
             self.flag_press = False
 
 
@@ -252,21 +251,14 @@ if __name__ == '__main__':
     # Создаём группы спрайтов
     all_sprites = pygame.sprite.Group()
     cube_sprites = pygame.sprite.Group()
-    game_cube_sprites = pygame.sprite.Group()
-    game_sprites_obstacles = pygame.sprite.Group()
-    create_level_sprites = pygame.sprite.Group()
-    all_sprites_front = pygame.sprite.Group()
-    sprites_obstacles = pygame.sprite.Group()
-    settings_sprites = pygame.sprite.Group()
-    troll_sprites = pygame.sprite.Group()
-    tutorial_sprites = pygame.sprite.Group()
-    create_sprites = pygame.sprite.Group()
-    load_level_sprites = pygame.sprite.Group()
+
+    exit_button = Button((width * 0.025 + 31, height * 0.06 + 29),
+                         "cube/exit.png", "cube/exit_pressed.png", "white", '', cube_sprites)
 
     # -----------------------Основные параметры-----------------------------------------------
     fps = 100
     clock = pygame.time.Clock()
 
-    custom_cube_window(screen, size)
+    custom_cube_window()
     pygame.mixer.music.stop()
     pygame.quit()
