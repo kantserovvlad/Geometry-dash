@@ -956,19 +956,16 @@ if __name__ == '__main__':
     game_board = Board(28 * 5, 11)
     player = Cube()
     flag = True
-
     # -----------------создание спрайтов главного экрана---------------
     play = Play()
     cube_style = CubeStyle()
     settings = Settings()
     editor_level = EditorLevel()
-
     # -----------------создание спрайтов для экрана настроек---------------
     exit = Exit()
     rate = Rate()
     tips = Tips()
     slider = Slider(width * 0.4, height * 0.7, 170, 10)
-
     # -----------------создание спрайтов для экрана создания уровня---------------
 
     delete = Button((77, height - 77), 'buttons/delete.png', 'buttons/delete.png',
