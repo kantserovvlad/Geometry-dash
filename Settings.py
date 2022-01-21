@@ -26,15 +26,15 @@ def tutorial_window():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                settings_sprites.update(event)
+                tutorial_sprites.update(event)
             if event.type == pygame.MOUSEBUTTONUP:
-                settings_sprites.update(event)
+                tutorial_sprites.update(event)
                 if exit_btn.rect.collidepoint(event.pos):
                     running = False
         screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))
         clock.tick(fps)
         draw_tutorial()
-        all_sprites.draw(screen)
+        tutorial_sprites.draw(screen)
         pygame.display.flip()
 
 
@@ -77,9 +77,9 @@ def troll_window():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                settings_sprites.update(event)
+                troll_sprites.update(event)
             if event.type == pygame.MOUSEBUTTONUP:
-                settings_sprites.update(event)
+                troll_sprites.update(event)
                 if exit.rect.collidepoint(event.pos):
                     running = False
 
@@ -87,7 +87,7 @@ def troll_window():
         image = load_image("no_internet.png", "white")
         image = pygame.transform.scale(image, (300, 300))
         screen.blit(image, (width // 2 - image.get_width() // 2, height * 0.3))
-        all_sprites.draw(troll_screen)
+        troll_sprites.draw(troll_screen)
         draw_text()
         pygame.display.flip()
 
@@ -228,7 +228,7 @@ class Button(pygame.sprite.Sprite):
 
 class Exit(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(all_sprites)
+        super().__init__(troll_sprites, tutorial_sprites)
         self.flag_press = False
         self.image = load_image("cube/exit.png", "white")
         self.image_press = load_image("cube/exit_pressed.png", "white")
@@ -251,7 +251,7 @@ class Exit(pygame.sprite.Sprite):
 
 class Rate(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(all_sprites)
+        super().__init__(settings_sprites)
         self.flag_press = False
         self.image = load_image("buttons/rate.png", (127, 127, 127))
         self.image_press = pygame.transform.scale(self.image, (240, 100))
@@ -294,7 +294,9 @@ if __name__ == '__main__':
 
     # Создаём группы спрайтов
     all_sprites = pygame.sprite.Group()
-    settings_sprites = pygame.sprite.Group()
+    settings_sprites = pygame.sprite.Group()  # группа спайтов основного окна настроек
+    troll_sprites = pygame.sprite.Group()  # группа спайтов окна "Без Интернета"
+    tutorial_sprites = pygame.sprite.Group()  # группа спайтов окна управления/обучения
     # -------------------------Создаём кнопки------------------------------------------------
     exit_btn = Exit()
     rate = Rate()
