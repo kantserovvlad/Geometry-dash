@@ -79,7 +79,6 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
 
     running = True
-    point_cube = None
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
