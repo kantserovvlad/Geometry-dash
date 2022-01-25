@@ -150,6 +150,21 @@ def draw_tutorial(screen):
         screen.blit(text, (text_x, text_y))
 
 
+def draw_finish(screen):
+    text = {f"Результат - 100%": [height * 0.1, 80, "green"],
+            f"Количество прыжков: {jumps}": [height * 0.3, 50, "white"],
+            f"Собрано звёзд: 0": [height * 0.4, 50, "white"],
+            f"Завершить игру": [height * 0.75, 50, "white"]}
+    for k, v in text.items():
+        font = pygame.font.Font(None, v[1])
+        text = font.render(k, True, v[2])
+        text_x = width // 2 - text.get_width() // 2
+        text_y = v[0]
+        text_w = text.get_width()
+        text_h = text.get_height()
+        screen.blit(text, (text_x, text_y))
+
+
 def draw_name_level(num):
     if num is not None:
         global music_name
@@ -415,6 +430,7 @@ def game_window():
     read_file()
     global flag
     global music_name
+    global jumps
     pygame.mixer.music.load(music_name)
     pygame.mixer.music.play(10)
     running = True
@@ -426,6 +442,7 @@ def game_window():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if flag:
+                        jumps += 1
                         player.jump()
                         flag = False
 
@@ -443,6 +460,29 @@ def game_window():
         clock.tick(fps)
         pygame.display.flip()
     pygame.mixer.music.stop()
+
+
+def finish_window():
+    exfinish_sprites = pygame.sprite.Group()
+    exfinish_button = Button((width // 2, height * 0.8), 'backgrounds/finish_exbutton.png', 'backgrounds/finish_exbutton.png', 'black',
+                             '', exfinish_sprites)
+    running = True
+    while running:
+        screen.fill("#242424")
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONUP:
+                exfinish_sprites.update(event)
+                if exfinish_sprites.rect.collidepoint(event.pos):
+                    pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                exfinish_sprites.update(event)
+
+        exfinish_sprites.draw(screen)
+        draw_finish(screen)
+        clock.tick(fps)
+        pygame.display.flip()
 
 
 # -----------------классы---------------
@@ -715,7 +755,7 @@ class Cube(pygame.sprite.Sprite):
         for f in finish_sprites:
             self.sopr = False
             if self.rect.collidepoint(f.rect.x, f.rect.y):
-                pygame.quit()
+                finish_window()
 
 
 if __name__ == '__main__':
@@ -822,6 +862,7 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
 
     point_cube = None
+    jumps = 0
 
     running = True
     while running:
