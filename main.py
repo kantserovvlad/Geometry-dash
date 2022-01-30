@@ -84,17 +84,19 @@ def create_level(n, point_cube):
         board.board[y][x] = n
         # -----------------------
         if n == 1:
-            Obstacle(1, 'game/thorn1.png', point_cube)
+            Thorn(1, 'game/thorn1.png', point_cube)
         elif n == 2:
-            Obstacle(2, 'game/thorn2.png', point_cube)
+            Thorn(2, 'game/thorn2.png', point_cube)
         elif n == 3:
             Obstacle(3, 'game/square.png', point_cube)
         elif n == 4:
-            finish = Finish(4, 'game/finish.png', point_cube)
+            Finish(4, 'game/finish.png', point_cube)
 
 
 def func(doing):
     global num_level
+    global back
+    global difficulty
     if doing == 1:
         if num_level < len(dict_of_levels.keys()):
             num_level += 1
@@ -105,16 +107,26 @@ def func(doing):
             num_level -= 1
         else:
             num_level = len(dict_of_levels.keys())
+    back = Button((width // 2, 153), dict_of_levels[num_level][6], dict_of_levels[num_level][7], 'black',
+                  'draw_name_level(num_level)', load_level_sprites)
+    difficulty = Button((273, 156), dict_of_levels[num_level][8], dict_of_levels[num_level][8], 'green', '',
+                        load_level_sprites)
+    Button((508, 199), 'load_level/silver_coin.png', 'load_level/silver_coin.png', 'black', '',
+                   load_level_sprites)
+    Button((543, 199), 'load_level/silver_coin.png', 'load_level/silver_coin.png', 'black', '',
+                   load_level_sprites)
+    Button((578, 199), 'load_level/silver_coin.png', 'load_level/silver_coin.png', 'black', '',
+                   load_level_sprites)
 
 
-def read_file(name='level1.txt'):
+def read_file(name):
     level = open(f'levels/{name}', 'r', encoding='utf-8').readlines()
     for i in range(len(game_board.board)):
         for j in range(len(game_board.board[i])):
             try:
                 game_board.board[i][j] = int(level[i][j])
                 create_level(int(level[i][j]), [j, i])
-            except Exception as ex:
+            except Exception:
                 game_board.board[i][j] = 0
 
 
@@ -145,8 +157,6 @@ def draw_tutorial(screen):
         text = font.render(k, True, (0, 255, 0))
         text_x = width // 2 - text.get_width() // 2
         text_y = v[0]
-        text_w = text.get_width()
-        text_h = text.get_height()
         screen.blit(text, (text_x, text_y))
 
 
@@ -160,8 +170,6 @@ def draw_finish(screen):
         text = font.render(k, True, v[2])
         text_x = width // 2 - text.get_width() // 2
         text_y = v[0]
-        text_w = text.get_width()
-        text_h = text.get_height()
         screen.blit(text, (text_x, text_y))
 
 
@@ -175,8 +183,6 @@ def draw_name_level(num):
         text = font.render(info[0], True, (255, 255, 255))
         text_x = width // 2 - text.get_width() // 2 + 20
         text_y = height // 2 - 2 * text.get_height()
-        text_w = text.get_width()
-        text_h = text.get_height()
         screen.blit(text, (text_x, text_y))
 
 
@@ -255,6 +261,8 @@ def settings_window():
 
 def custom_cube_window():
     global size
+    global player
+    global game_cube_sprites
     width, height = size
     style_cube, color1, color2 = None, None, None
     main_cube = pygame.sprite.Group()
@@ -264,7 +272,7 @@ def custom_cube_window():
               "style3.png": (width * 0.17, height * 0.4), "style4.png": (width * 0.17, height * 0.575)}
 
     for name, coords in styles.items():
-        style = Styles(name, coords)
+        Styles(name, coords)
 
     image = load_image("cube/colors.png", -1)
     for i in range(2):
@@ -344,6 +352,9 @@ def custom_cube_window():
             else:
                 cube_image = load_image("cube/cube.png", "white")
 
+            game_cube_sprites = pygame.sprite.Group()
+            player = Cube()
+
             sprite.image = cube_image
             sprite.image = pygame.transform.scale(sprite.image, (150, 150))
 
@@ -407,7 +418,7 @@ def load_level_window():
     global num_level
     running = True
     while running:
-        screen.fill((45, 58, 175))
+        screen.fill(dict_of_levels[num_level][5])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -426,11 +437,10 @@ def load_level_window():
 
 
 def game_window():
-    # -----------------------------------------
-    read_file()
     global flag
     global music_name
     global jumps
+    read_file(dict_of_levels[num_level][1])
     pygame.mixer.music.load(music_name)
     pygame.mixer.music.play(10)
     running = True
@@ -447,10 +457,12 @@ def game_window():
                         flag = False
 
         # -------------------------------------
-        screen.blit(load_image('backgrounds/fon1.jpg'), (0, 0))  # Создаём фон
-        pygame.draw.rect(screen, '#1B233D', (0, 330, width, height))  # Дополнительнй прямоугольник
+        screen.blit(load_image(f'backgrounds/{dict_of_levels[num_level][3]}'), (0, 0))  # Создаём фон
+        pygame.draw.rect(screen, dict_of_levels[num_level][4], (0, 330, width, height))  # Дополнительнй прямоугольник
         game_sprites_obstacles.draw(screen)  # Отрисовываем препятсвия
         game_sprites_obstacles.update()
+        thorn_sprites.draw(screen)
+        thorn_sprites.update()
         finish_sprites.draw(screen)
         finish_sprites.update()
         player.cjump()
@@ -464,21 +476,21 @@ def game_window():
 
 def finish_window():
     exfinish_sprites = pygame.sprite.Group()
-    exfinish_button = Button((width // 2, height * 0.8), 'backgrounds/finish_exbutton.png', 'backgrounds/finish_exbutton.png', 'black',
+    exfinish_button = Button((width // 2, height * 0.8), 'buttons/finish_exbutton.png', 'buttons/finish_exbutton.png',
+                             'black',
                              '', exfinish_sprites)
     running = True
     while running:
-        screen.fill("#242424")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-            if event.type == pygame.MOUSEBUTTONUP:
-                exfinish_sprites.update(event)
-                if exfinish_sprites.rect.collidepoint(event.pos):
-                    pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 exfinish_sprites.update(event)
-
+            if event.type == pygame.MOUSEBUTTONUP:
+                exfinish_sprites.update(event)
+                if exfinish_button.rect.collidepoint(event.pos):
+                    pygame.quit()
+        screen.fill("#242424")
         exfinish_sprites.draw(screen)
         draw_finish(screen)
         clock.tick(fps)
@@ -487,19 +499,81 @@ def finish_window():
 
 # -----------------классы---------------
 
-
-class Finish(pygame.sprite.Sprite):
-    def __init__(self, n, image, point):
-        super().__init__(finish_sprites)
-        self.n = n
-        self.point = point
-        self.image = load_image(image)
+class Button(pygame.sprite.Sprite):
+    def __init__(self, point, image, image_press, fon, action, *sprite_groups):
+        super().__init__(*sprite_groups)
+        self.action = action
+        self.flag_press = False
+        self.image = load_image(image, fon)
+        self.image_press = load_image(image_press, fon)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
+        self.rect.center = point
+
+    def update(self, event):
+        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
+                self.rect.collidepoint(event.pos):
+            self.flag_press = True
+            x, y, = self.rect.center
+            self.image, self.image_press = self.image_press, self.image
+            self.rect = self.image.get_rect()
+            self.rect.center = x, y
+
+        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
+            exec(self.action)
+            self.flag_press = False
+
+
+class Board:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.board = [[0] * width for _ in range(height)]
+        self.left = 0
+        self.top = 0
+        self.cell_size = 30
+
+    def set_view(self, left, top, cell_size):
+        self.left = left
+        self.top = top
+        self.cell_size = cell_size
+
+    def render(self, screen, select=None):
+        for y in range(self.height):
+            for x in range(self.width):
+                pygame.draw.rect(screen, pygame.Color(0, 0, 0), (x * self.cell_size + self.left,
+                                                                 y * self.cell_size + self.top,
+                                                                 self.cell_size, self.cell_size), 1)
+        if select is not None:
+            self.select_cube(select)
 
     def update(self):
-        self.rect.x -= int(v / fps)
+        self.left -= int(v / fps)
+        self.render(screen)
+
+    def get_cell(self, mouse_pos):
+        cell_x = (mouse_pos[0] - self.left) // self.cell_size
+        cell_y = (mouse_pos[1] - self.top) // self.cell_size
+        if cell_x < 0 or cell_x >= self.width or cell_y < 0 or cell_y >= self.height:
+            return None
+        return cell_x, cell_y
+
+    def select_cube(self, point):
+        pygame.draw.rect(screen, pygame.Color(255, 255, 255), (point[0] * self.cell_size + self.left,
+                                                               point[1] * self.cell_size + self.top,
+                                                               self.cell_size, self.cell_size), 1)
+
+    def clear(self):
+        self.board = [[0] * self.width for _ in range(self.height)]
+        self.render(screen)
+
+    def save(self):
+        with open("level_test.txt", mode="w") as f:
+            for row in self.board:
+                row = list(map(str, row))
+                row = "".join(row)
+                f.write(row)
+                f.write("\n")
 
 
 class Slider:
@@ -614,81 +688,32 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect.x -= int(v / fps)
 
 
-class Button(pygame.sprite.Sprite):
-    def __init__(self, point, image, image_press, fon, action, *sprite_groups):
-        super().__init__(*sprite_groups)
-        self.action = action
-        self.flag_press = False
-        self.image = load_image(image, fon)
-        self.image_press = load_image(image_press, fon)
+class Thorn(pygame.sprite.Sprite):
+    def __init__(self, n, image, point):
+        super().__init__(thorn_sprites)
+        self.n = n
+        self.point = point
+        self.image = load_image(image)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.center = point
-
-    def update(self, event):
-        if (event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP) and \
-                self.rect.collidepoint(event.pos):
-            self.flag_press = True
-            x, y, = self.rect.center
-            self.image, self.image_press = self.image_press, self.image
-            self.rect = self.image.get_rect()
-            self.rect.center = x, y
-
-        if event.type == pygame.MOUSEBUTTONUP and self.flag_press:
-            exec(self.action)
-            self.flag_press = False
-
-
-class Board:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.board = [[0] * width for _ in range(height)]
-        self.left = 0
-        self.top = 0
-        self.cell_size = 30
-
-    def set_view(self, left, top, cell_size):
-        self.left = left
-        self.top = top
-        self.cell_size = cell_size
-
-    def render(self, screen, select=None):
-        for y in range(self.height):
-            for x in range(self.width):
-                pygame.draw.rect(screen, pygame.Color(0, 0, 0), (x * self.cell_size + self.left,
-                                                                 y * self.cell_size + self.top,
-                                                                 self.cell_size, self.cell_size), 1)
-        if select is not None:
-            self.select_cube(select)
+        self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
 
     def update(self):
-        self.left -= int(v / fps)
-        self.render(screen)
+        self.rect.x -= int(v / fps)
 
-    def get_cell(self, mouse_pos):
-        cell_x = (mouse_pos[0] - self.left) // self.cell_size
-        cell_y = (mouse_pos[1] - self.top) // self.cell_size
-        if cell_x < 0 or cell_x >= self.width or cell_y < 0 or cell_y >= self.height:
-            return None
-        return cell_x, cell_y
 
-    def select_cube(self, point):
-        pygame.draw.rect(screen, pygame.Color(255, 255, 255), (point[0] * self.cell_size + self.left,
-                                                               point[1] * self.cell_size + self.top,
-                                                               self.cell_size, self.cell_size), 1)
+class Finish(pygame.sprite.Sprite):
+    def __init__(self, n, image, point):
+        super().__init__(finish_sprites)
+        self.n = n
+        self.point = point
+        self.image = load_image(image)
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.center = (point[0] * 30 + 15, point[1] * 30 + 15)
 
-    def clear(self):
-        self.board = [[0] * self.width for _ in range(self.height)]
-        self.render(screen)
-
-    def save(self):
-        with open("level_test.txt", mode="w") as f:
-            for row in self.board:
-                row = list(map(str, row))
-                row = "".join(row)
-                f.write(row)
-                f.write("\n")
+    def update(self):
+        self.rect.x -= int(v / fps)
 
 
 class Cube(pygame.sprite.Sprite):
@@ -752,10 +777,24 @@ class Cube(pygame.sprite.Sprite):
             self.orig_image = self.image
 
     def update(self):
+        global thorn_sprites
+        global finish_sprites
+        global game_sprites_obstacles
         for f in finish_sprites:
-            self.sopr = False
             if self.rect.collidepoint(f.rect.x, f.rect.y):
                 finish_window()
+        for t in thorn_sprites:
+            if self.rect.collidepoint(t.rect.x, t.rect.y):
+                game_sprites_obstacles = pygame.sprite.Group()
+                thorn_sprites = pygame.sprite.Group()
+                finish_sprites = pygame.sprite.Group()
+
+                screen.blit(load_image(f'backgrounds/{dict_of_levels[num_level][3]}'), (0, 0))
+                pygame.draw.rect(screen, dict_of_levels[num_level][4], (0, 330, width, height))
+
+                read_file(dict_of_levels[num_level][1])
+                pygame.mixer.music.load(music_name)
+                pygame.mixer.music.play(10)
 
 
 if __name__ == '__main__':
@@ -768,13 +807,16 @@ if __name__ == '__main__':
     pygame.mixer.music.load('music/start.mp3')  # загружаем фоновую музыку
     pygame.mixer.music.play()
 
-    dict_of_levels = {1: ["Level Test", "level_test.txt", "music\Bossfight-Vextron.mp3"],
-                      2: ["Level Test - 2", "level_test_2.txt", "music\Bossfight-Vextron.mp3"],
-                      3: ["Level Test - 3", "level_test_3.txt", "music\Bossfight-Vextron.mp3"]
+    # Словарик с информацией об уровнях
+    dict_of_levels = {1: ["Energy", "level1.txt", "music\Elektronomia-Energy.mp3", "fon1.jpg", "#1B233D", (45, 58, 175),
+                          "load_level/back1.png", "load_level/back1_press.png", "difficulty/easy.png"],
+                      2: ["Good Vibes", "level2.txt", "music\Good Vibes-Helion.mp3", "fon2.png", "#650A73",
+                          (175, 0, 163), "load_level/back2.png", "load_level/back2_press.png", "difficulty/normal.png"],
+                      3: ["Bossfight", "level3.txt", "music\Bossfight-Vextron.mp3", "fon3.png", "#730A11", (175, 0, 12),
+                          "load_level/back3.png", "load_level/back3_press.png", "difficulty/hard.png"]
                       }
 
     num_level = 1
-    num = None
     music_name = ""
 
     # Создаём группы спрайтов
@@ -790,6 +832,7 @@ if __name__ == '__main__':
 
     game_sprites_obstacles = pygame.sprite.Group()
     game_cube_sprites = pygame.sprite.Group()
+    thorn_sprites = pygame.sprite.Group()
     finish_sprites = pygame.sprite.Group()
 
     # -------------------------Создаём кнопки------------------------------------------------
@@ -841,7 +884,7 @@ if __name__ == '__main__':
                         'red', 'func(1)', load_level_sprites)
 
     exit2 = Button((40, 49), 'load_level/exit2.png', 'load_level/exit2_press.png', 'white', '', load_level_sprites)
-    back = Button((width // 2, 153), 'load_level/back.png', 'load_level/back_press.png', 'black',
+    back = Button((width // 2, 153), dict_of_levels[num_level][6], dict_of_levels[num_level][7], 'black',
                   'draw_name_level(num_level)', load_level_sprites)
 
     coin1 = Button((508, 199), 'load_level/silver_coin.png', 'load_level/silver_coin.png', 'black', '',
@@ -851,7 +894,8 @@ if __name__ == '__main__':
     coin3 = Button((578, 199), 'load_level/silver_coin.png', 'load_level/silver_coin.png', 'black', '',
                    load_level_sprites)
 
-    difficulty = Button((273, 156), 'difficulty/easy.png', 'difficulty/easy.png', 'red', '', load_level_sprites)
+    difficulty = Button((273, 156), dict_of_levels[num_level][8], dict_of_levels[num_level][8], 'green', '',
+                        load_level_sprites)
 
     game_board = Board(28 * 5, 11)
     player = Cube()
