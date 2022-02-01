@@ -93,7 +93,7 @@ def create_level(n, point_cube):
             Finish(4, 'game/finish.png', point_cube)
 
 
-def func(doing):
+def func(doing):  #  функция для "пролистывания" уровней в окне для выбора уровня
     global num_level
     global back
     global difficulty
@@ -735,7 +735,7 @@ class Cube(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = 150 + self.image.get_width(), 330 - (self.image.get_height() // 2)
 
-    def jump(self):
+    def jump(self):  #  функция вызывания прыжка
         self.angle = 0
         x, y = self.rect.center
         y -= self.speed
@@ -743,7 +743,7 @@ class Cube(pygame.sprite.Sprite):
         self.is_jump = True
         self.up = True
 
-    def cjump(self):
+    def cjump(self):  #  функция прыжка(вызывается, пока кубик не приземлится)
         global flag
         x, y = self.rect.center
 
