@@ -459,14 +459,14 @@ def game_window():
         # -------------------------------------
         screen.blit(load_image(f'backgrounds/{dict_of_levels[num_level][3]}'), (0, 0))  # Создаём фон
         pygame.draw.rect(screen, dict_of_levels[num_level][4], (0, 330, width, height))  # Дополнительнй прямоугольник
+        player.cjump()
+        player.update()
         game_sprites_obstacles.draw(screen)  # Отрисовываем препятсвия
         game_sprites_obstacles.update()
         thorn_sprites.draw(screen)
         thorn_sprites.update()
         finish_sprites.draw(screen)
         finish_sprites.update()
-        player.cjump()
-        player.update()
         game_cube_sprites.draw(screen)
         # -----------------------------
         clock.tick(fps)
