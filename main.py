@@ -440,8 +440,7 @@ def load_level_window():
 
 
 def game_window():
-    global flag, music_name, jumps, square_obstacles, thorn_sprites, game_screen
-    game_screen = pygame.display.set_mode(size)
+    global flag, music_name, jumps, square_obstacles, thorn_sprites
 
     read_file(dict_of_levels[num_level][1])
     pygame.mixer.music.load(music_name)
@@ -460,17 +459,17 @@ def game_window():
                         flag = False
 
         # -------------------------------------
-        game_screen.blit(load_image(f'backgrounds/{dict_of_levels[num_level][3]}'), (0, 0))  # Создаём фон
-        pygame.draw.rect(game_screen, dict_of_levels[num_level][4], (0, 330, width, height))  # Дополнительнй прямоугольник
+        screen.blit(load_image(f'backgrounds/{dict_of_levels[num_level][3]}'), (0, 0))  # Создаём фон
+        pygame.draw.rect(screen, dict_of_levels[num_level][4], (0, 330, width, height))  # Дополнительнй прямоугольник
         player.cjump()
         player.update()
-        square_obstacles.draw(game_screen)  # Отрисовываем препятсвия
+        square_obstacles.draw(screen)  # Отрисовываем препятсвия
         square_obstacles.update()
-        thorn_sprites.draw(game_screen)
+        thorn_sprites.draw(screen)
         thorn_sprites.update()
-        finish_sprites.draw(game_screen)
+        finish_sprites.draw(screen)
         finish_sprites.update()
-        game_cube_sprites.draw(game_screen)
+        game_cube_sprites.draw(screen)
         # -----------------------------
         clock.tick(fps)
         pygame.display.flip()
@@ -780,19 +779,19 @@ class Cube(pygame.sprite.Sprite):
             self.orig_image = self.image
 
     def update(self):
-        global thorn_sprites, finish_sprites, game_sprites_obstacles, game_screen
+        global thorn_sprites, finish_sprites, game_sprites_obstacles, screen
         for f in finish_sprites:
             if self.rect.collidepoint(f.rect.x, f.rect.y):
                 finish_window()
         for t in thorn_sprites:
             if self.rect.collidepoint(t.rect.x, t.rect.y):
-                game_screen = pygame.display.set_mode(size)
+                screen = pygame.display.set_mode(size)
                 game_sprites_obstacles = pygame.sprite.Group()
                 thorn_sprites = pygame.sprite.Group()
                 finish_sprites = pygame.sprite.Group()
 
-                game_screen.blit(load_image(f'backgrounds/{dict_of_levels[num_level][3]}'), (0, 0))
-                pygame.draw.rect(game_screen, dict_of_levels[num_level][4], (0, 330, width, height))
+                screen.blit(load_image(f'backgrounds/{dict_of_levels[num_level][3]}'), (0, 0))
+                pygame.draw.rect(screen, dict_of_levels[num_level][4], (0, 330, width, height))
 
                 read_file(dict_of_levels[num_level][1])
                 pygame.mixer.music.load(music_name)
@@ -803,7 +802,6 @@ if __name__ == '__main__':
     pygame.init()
     size = width, height = 840, 440
     screen = pygame.display.set_mode(size)
-    game_screen = pygame.display.set_mode(size)
     pygame.display.set_caption('Geometry dash')
     pygame.display.set_icon(pygame.image.load("images/icon.png"))
 
